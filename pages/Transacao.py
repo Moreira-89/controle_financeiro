@@ -12,6 +12,7 @@ if st.sidebar.button("Nova Receita", icon=":material/trending_up:"):
 if st.sidebar.button("Nova Despesa", icon=":material/arrow_downward:"):
     new_despesa()
 st.sidebar.markdown("### Navegação")
+st.sidebar.page_link("pages/objetivos.py", label="Objetivos", icon=":material/star:")
 st.sidebar.page_link("app.py", label="Home", icon=":material/home:")
 st.sidebar.markdown("---")
 

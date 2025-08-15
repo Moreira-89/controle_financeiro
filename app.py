@@ -31,6 +31,7 @@ def main():
 
         st.sidebar.markdown("### Navegação")
         st.sidebar.page_link("pages/transacao.py", label="Extrato de Transações", icon=":material/list_alt:")
+        st.sidebar.page_link("pages/objetivos.py", label="Objetivos", icon=":material/star:")
         st.sidebar.markdown("---")
 
         df = pd.DataFrame(get_transacao())
