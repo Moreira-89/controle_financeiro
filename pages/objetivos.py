@@ -18,11 +18,9 @@ def renderizar_objetivos():
     
     service = ObjetivosService()
     
-    # Botão para novo objetivo
     if st.button("\u2795 Novo Objetivo", type="primary"):
         novo_objetivo_modal()
     
-    # Lista objetivos existentes
     objetivos = service.listar_objetivos()
     
     if not objetivos:
@@ -34,7 +32,7 @@ def renderizar_objetivos():
             col1, col2, col3 = st.columns([2, 1, 1])
             
             with col1:
-                # Barra de progresso
+
                 progresso = service.calcular_progresso(
                     objetivo['valor_atual'], 
                     objetivo['valor_meta']
@@ -140,7 +138,7 @@ def atualizar_objetivo_modal(objetivo):
         st.write(f"**Progresso:** {progresso_atual:.1f}%")
     
     with col2:
-        # Input para novo valor
+
         novo_valor = st.number_input(
             "\U0001F4B0 Novo Valor Atual (R$)",
             min_value=0.0,
@@ -149,7 +147,6 @@ def atualizar_objetivo_modal(objetivo):
             key=f"novo_valor_{objetivo['_id']}"
         )
         
-        # Preview do novo progresso
         if novo_valor != objetivo['valor_atual']:
             novo_progresso = service.calcular_progresso(novo_valor, objetivo['valor_meta'])
             diferenca = novo_valor - objetivo['valor_atual']
@@ -161,7 +158,6 @@ def atualizar_objetivo_modal(objetivo):
             
             st.info(f"\U0001F3AF Novo progresso: {novo_progresso:.1f}%")
     
-    # Adição rápida de valores
     st.markdown("**\u26A1 Adição Rápida:**")
     col_add1, col_add2, col_add3, col_add4 = st.columns(4)
     
@@ -197,12 +193,11 @@ def atualizar_objetivo_modal(objetivo):
             return
         
         if service.atualizar_progresso(objetivo['_id'], novo_valor):
-            # Verifica se atingiu a meta
+
             if novo_valor >= objetivo['valor_meta']:
                 st.balloons()
                 st.success("\U0001F389 **PARABÉNS!** Você atingiu sua meta!")
                 
-                # Pergunta se quer marcar como concluído
                 if st.button("\u2705 Marcar como Concluído", type="primary"):
                     service.colecao.update_one(
                         {"_id": objetivo['_id']},

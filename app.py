@@ -8,7 +8,6 @@ import streamlit as st
 
 def main():
 
-
     if "authenticated" not in st.session_state:
         st.session_state.authenticated = False
 
