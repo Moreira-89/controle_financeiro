@@ -4,19 +4,18 @@ import streamlit as st
 def connect_db():
 
     try:
-        url_connection = st.secrets["URL_CONNECTION_MONGO"]
-
-        Connect_Mongo = MongoClient(url_connection)
-
-        if Connect_Mongo.server_info() is None:
-            st.error("Erro ao conectar ao MongoDB")
-
-        db = Connect_Mongo.get_database("controle_financeiro")
-
-        if db is None:
-            st.error("Erro ao conectar ao banco de dados")
-
+        url_connection = st.secrets.get("URL_CONNECTION_MONGO")
+        if not url_connection:
+            st.error("\u274C URL de conexão MongoDB não configurada")
+            return None
+            
+        client = MongoClient(url_connection, serverSelectionTimeoutMS=5000)
+        client.admin.command('ping') 
+        
+        db = client.get_database("controle_financeiro")
         return db
-
+        
     except Exception as e:
-        print(f"Erro ao conectar ao MongoDB: {e}")
+        st.error(f"\u274C Erro de conexão com MongoDB: {str(e)}")
+        st.info("\U0001F4A1 Verifique se o MongoDB está rodando e as credenciais estão corretas")
+        return None
