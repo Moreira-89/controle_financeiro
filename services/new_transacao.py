@@ -40,10 +40,7 @@ def new_receita():
     col1, col2 = st.columns(2)
     
     with col1:        
-        data = st.date_input(
-            "\U0001F4C5 Data da Receita",
-            help="\U0001F4A1 Dica: Use as setas ←→ para navegar entre os meses"
-        )
+        data = st.date_input()
         
         # Subcategoria com sugestões de valores
         subcategoria = st.selectbox(
@@ -60,9 +57,9 @@ def new_receita():
     with col2:
         # Descrição com autocompletar
         st.markdown("**\U0001F4DD Descrição da Receita**")
-        
-        descricao = st.text_input()
-    
+
+        descricao = st.text_input(label="", placeholder="Ex: Salário - Janeiro")
+
     # Validação em tempo real
     erros, alertas = validar_transacao_avancada(valor, descricao, data, "receita")
     
