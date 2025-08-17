@@ -24,40 +24,14 @@ def main():
             initial_sidebar_state="expanded"
         )
 
-        st.markdown("""
-        <style>
-        .main-header {
-            padding: 1rem 0;
-            border-bottom: 2px solid #f0f2f6;
-            margin-bottom: 2rem;
-        }
-        .quick-stats {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 1rem;
-            border-radius: 10px;
-            margin-bottom: 1rem;
-        }
-        .metric-card {
-            background: white;
-            padding: 1rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            border-left: 4px solid #3498db;
-        }
-        </style>
-        """, unsafe_allow_html=True)
-
         col_header1, col_header3 = st.columns([3, 1])
 
         with col_header1:
             st.title("\U0001F4B0 Meu Controle Financeiro")
-            hoje = datetime.now()
-            st.markdown(f"**{hoje.strftime('%A, %d de %B de %Y')}**")
 
         with col_header3:
             st.markdown("**Status do Mês:**")
-            mes_atual = datetime.now().strftime("%m/%Y")
+            mes_atual = datetime.now().strftime("%d/%m/%Y")
             st.info(f"\U0001F4C5 {mes_atual}")
 
         setup_sidebar()
@@ -114,59 +88,26 @@ def render_dashboard_metrics(df):
     
     receitas_mes = df_mes[df_mes["Categoria Principal"] == "Receita"]["Valor R$"].sum()
     despesas_mes = df_mes[df_mes["Categoria Principal"] == "Despesa"]["Valor R$"].sum()
-    saldo_mes = receitas_mes - despesas_mes
     
     col1, col2, col3= st.columns(3)
     
-    with col1:
-        receitas_mes_anterior = get_receitas_mes_anterior(df, hoje)
-        delta_receitas = receitas_mes - receitas_mes_anterior if receitas_mes_anterior > 0 else 0
-        
+    with col1:        
         st.metric(
             "\U0001F49A Receitas Total",
-            f"R$ {total_receitas:,.2f}",
-            f"Mês: R$ {receitas_mes:,.2f}"
+            f"R$ {receitas_mes:,.2f}"
         )
-        
-        if delta_receitas != 0:
-            delta_text = f"R$ {abs(delta_receitas):,.2f}" + (" \u2B06" if delta_receitas > 0 else " \u2B07")
-            if delta_receitas > 0:
-                st.success(f"vs mês anterior: +{delta_text}")
-            else:
-                st.error(f"vs mês anterior: -{delta_text}")
     
-    with col2:
-        despesas_mes_anterior = get_despesas_mes_anterior(df, hoje)
-        delta_despesas = despesas_mes - despesas_mes_anterior if despesas_mes_anterior > 0 else 0
-        
+    with col2:        
         st.metric(
             "\U0001F4B8 Despesas Total",
-            f"R$ {total_despesas:,.2f}",
-            f"Mês: R$ {despesas_mes:,.2f}"
+            f"R$ {despesas_mes:,.2f}"
         )
-        
-        if delta_despesas != 0:
-            delta_text = f"R$ {abs(delta_despesas):,.2f}" + (" \u2B06" if delta_despesas > 0 else " \u2B07")
-            if delta_despesas > 0:
-                st.warning(f"vs mês anterior: +{delta_text}")
-            else:
-                st.success(f"vs mês anterior: -{delta_text}")
     
     with col3:
         st.metric(
             "\U0001F4B0 Saldo Total",
             f"R$ {saldo_total:,.2f}",
-            f"Mês: R$ {saldo_mes:,.2f}"
         )
-        
-        if saldo_total > 1000:
-            st.success("\U0001F389 Situação excelente!")
-        elif saldo_total > 0:
-            st.info("\U0001F44D Situação positiva")
-        elif saldo_total > -500:
-            st.warning("\u26A0 Atenção ao saldo")
-        else:
-            st.error("\U0001F6A8 Situação crítica")
     
 def render_smart_insights(df):
     """Insights automáticos inteligentes"""
@@ -174,7 +115,6 @@ def render_smart_insights(df):
     
     insights = []
     
-    # Análise de gastos por categoria
     despesas = df[df["Categoria Principal"] == "Despesa"]
     if not despesas.empty:
         gasto_por_categoria = despesas.groupby("Subcategoria")["Valor R$"].sum().sort_values(ascending=False)
@@ -187,7 +127,6 @@ def render_smart_insights(df):
             "texto": f"Você gastou mais em **{categoria_maior_gasto}**: R$ {valor_maior_gasto:,.2f}"
         })
     
-    # Análise de tendência
     hoje = datetime.now()
     df['Data'] = pd.to_datetime(df['Data'], format='%d/%m/%Y', errors='coerce')
     ultimos_7_dias = df[df['Data'] >= (hoje - timedelta(days=7))]
@@ -209,7 +148,6 @@ def render_smart_insights(df):
                 "texto": f"Média diária: R$ {media_diaria:.2f}. Parabéns pelo controle!"
             })
     
-    # Análise de receitas vs despesas
     receitas_total = df[df["Categoria Principal"] == "Receita"]["Valor R$"].sum()
     despesas_total = df[df["Categoria Principal"] == "Despesa"]["Valor R$"].sum()
     
@@ -235,10 +173,9 @@ def render_smart_insights(df):
                 "texto": f"Gastos representam {percentual_gasto:.1f}% das receitas"
             })
     
-    # Renderiza insights
     cols_insights = st.columns(len(insights) if len(insights) <= 3 else 3)
     
-    for i, insight in enumerate(insights[:3]):  # Máximo 3 insights
+    for i, insight in enumerate(insights[:3]):
         with cols_insights[i]:
             if insight["tipo"] == "success":
                 st.success(f"**{insight['titulo']}**\n\n{insight['texto']}")
