@@ -4,32 +4,6 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime, timedelta
 
-# Cache para sugestões inteligentes
-@st.cache_data(ttl=600)  # Cache por 10 minutos
-def get_sugestoes_inteligentes():
-    """Obtém sugestões baseadas no histórico"""
-    try:
-        df = get_transacao()
-        if df.empty:
-            return {
-                "descricoes_receita": [],
-                "descricoes_despesa": [],
-                "valores_receita": [],
-                "valores_despesa": []
-            }
-        
-        # Separar receitas e despesas
-        receitas = df[df["Categoria Principal"] == "Receita"]
-        despesas = df[df["Categoria Principal"] == "Despesa"]
-        
-        return {
-            "descricoes_receita": receitas["Descrição"].unique().tolist()[-10:],  # Últimas 10
-            "descricoes_despesa": despesas["Descrição"].unique().tolist()[-10:],
-            "valores_receita": receitas.groupby("Subcategoria")["Valor R$"].mean().to_dict(),
-            "valores_despesa": despesas.groupby("Subcategoria")["Valor R$"].mean().to_dict()
-        }
-    except:
-        return {"descricoes_receita": [], "descricoes_despesa": [], "valores_receita": {}, "valores_despesa": {}}
 
 def validar_transacao_avancada(valor, descricao, data, tipo):
     """Validação avançada com feedback personalizado"""
@@ -63,9 +37,6 @@ def validar_transacao_avancada(valor, descricao, data, tipo):
 def new_receita():
     st.markdown("### Adicionar nova receita")
     
-    # Obtém sugestões
-    sugestoes = get_sugestoes_inteligentes()
-    
     col1, col2 = st.columns(2)
     
     with col1:
@@ -87,16 +58,10 @@ def new_receita():
             sorted(["Salário", "Investimentos", "Dividendos", "Pix Recebido", "Renda Anterior", "Freelance", "Bonificação", "Outros"])
         )
         
-        # Valor com sugestão baseada na categoria
-        valor_sugerido = sugestoes["valores_receita"].get(subcategoria, 0.0)
-        if valor_sugerido > 0:
-            st.info(f"\U0001F4A1 Valor médio para {subcategoria}: R$ {valor_sugerido:.2f}")
-        
         valor = st.number_input(
             "\U0001F4B0 Valor da Receita (R$)", 
             min_value=0.01, 
             format="%.2f",
-            value=float(valor_sugerido) if valor_sugerido > 0 else 0.01,
             help="\U0001F4A1 Valores positivos aumentam seu saldo"
         )
     
@@ -104,18 +69,7 @@ def new_receita():
         # Descrição com autocompletar
         st.markdown("**\U0001F4DD Descrição da Receita**")
         
-        if sugestoes["descricoes_receita"]:
-            descricao_sugerida = st.selectbox(
-                "Usar descrição anterior:",
-                [""] + sugestoes["descricoes_receita"],
-                help="\U0001F4A1 Selecione uma descrição usada antes ou digite uma nova abaixo"
-            )
-        else:
-            descricao_sugerida = ""
-        
         descricao = st.text_input(
-            "Ou digite uma nova:",
-            value=descricao_sugerida,
             placeholder=f"Ex: {subcategoria} - {datetime.now().strftime('%B %Y')}",
             help="\U0001F4A1 Seja específico para melhor controle"
         )
@@ -157,9 +111,6 @@ def new_receita():
                 db = connect_db()
                 colecao = db.get_collection("transacoes")
                 
-                # Limpa cache antes de inserir
-                get_sugestoes_inteligentes.clear()
-                
                 result = colecao.insert_one({
                     "data": data.strftime("%d/%m/%Y"),
                     "valor": valor,
@@ -194,9 +145,6 @@ def new_receita():
 def new_despesa():
     st.markdown("### Adicionar nova despesa")
     
-    # Obtém sugestões
-    sugestoes = get_sugestoes_inteligentes()
-    
     col1, col2 = st.columns(2)
     
     with col1:
@@ -214,16 +162,10 @@ def new_despesa():
         
         subcategoria = st.selectbox("\U0001F3F7 Subcategoria", subcategorias_ordenadas)
         
-        # Valor com sugestão e alertas
-        valor_sugerido = sugestoes["valores_despesa"].get(subcategoria, 0.0)
-        if valor_sugerido > 0:
-            st.info(f"\U0001F4A1 Valor médio para {subcategoria}: R$ {valor_sugerido:.2f}")
-        
         valor = st.number_input(
             "\U0001F4B0 Valor da Despesa (R$)", 
             min_value=0.01, 
             format="%.2f",
-            value=float(valor_sugerido) if valor_sugerido > 0 else 0.01,
             help="\U0001F4A1 Valores de despesa reduzem seu saldo"
         )
         
@@ -250,18 +192,7 @@ def new_despesa():
             "Outros": ["Diversos", "Variados"]
         }
         
-        sugestoes_desc = sugestoes_categoria.get(subcategoria, [])
-        if sugestoes_desc:
-            descricao_sugerida = st.selectbox(
-                "Sugestões rápidas:",
-                [""] + sugestoes_desc + (sugestoes["descricoes_despesa"] if sugestoes["descricoes_despesa"] else [])
-            )
-        else:
-            descricao_sugerida = ""
-        
         descricao = st.text_input(
-            "Ou digite uma nova:",
-            value=descricao_sugerida,
             placeholder=f"Ex: {subcategoria} - {data.strftime('%d/%m')}",
             help="💡 Detalhe o que foi comprado para melhor controle"
         )
@@ -349,9 +280,6 @@ def new_despesa():
             try:
                 db = connect_db()
                 colecao = db.get_collection("transacoes")
-                
-                # Limpa cache
-                get_sugestoes_inteligentes.clear()
                 
                 result = colecao.insert_one({
                     "data": data.strftime("%d/%m/%Y"),
