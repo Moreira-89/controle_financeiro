@@ -1,8 +1,8 @@
 import streamlit as st
-from datetime import datetime, timedelta
+from datetime import datetime
 from services.cartao_service import CartaoService
+from services.get_transacao import get_transacao_credito
 import plotly.express as px
-import plotly.graph_objects as go
 
 def main():
     st.set_page_config(
@@ -78,6 +78,9 @@ def main():
     
     # Lista de cartões
     render_cartoes(service)
+
+    # Visualizar transações de crédito
+    view_transacoes_credito()
 
 def setup_sidebar():
     """Configuração da sidebar"""
@@ -462,6 +465,16 @@ def nova_compra_modal(cartao_id=None):
     with col_btn2:
         if st.button("\U0001F6AB Cancelar", use_container_width=True):
             st.rerun()
+
+
+def view_transacoes_credito():
+    df = get_transacao_credito()
+
+    st.subheader("Transações do Cartão de Crédito")
+    st.dataframe(df,
+        use_container_width=True,
+        hide_index=True,
+        height=400)
 
 if __name__ == "__main__":
     main()
