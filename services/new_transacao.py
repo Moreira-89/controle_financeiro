@@ -12,11 +12,11 @@ def validar_transacao_avancada(valor, descricao, data, tipo):
     
     # Validações básicas
     if valor <= 0:
-        erros.append("\u26A0 Valor deve ser maior que zero")
+        erros.append("\U000026A0 Valor deve ser maior que zero")
     if not descricao.strip():
-        erros.append("\u26A0 Descrição é obrigatória")
+        erros.append("\U000026A0 Descrição é obrigatória")
     if data > datetime.now().date():
-        erros.append("\u26A0 Data não pode ser no futuro")
+        erros.append("\U000026A0 Data não pode ser no futuro")
     
     # Validações inteligentes
     if valor > 10000:
@@ -40,7 +40,10 @@ def new_receita():
     col1, col2 = st.columns(2)
     
     with col1:        
-        data = st.date_input()
+        data = st.date_input(
+            "\U0001F4C5 Data da Receita",
+            help="\U0001F4A1 Dica: Use as setas ←→ para navegar entre os meses"
+        )
         
         # Subcategoria com sugestões de valores
         subcategoria = st.selectbox(
@@ -57,8 +60,10 @@ def new_receita():
     with col2:
         # Descrição com autocompletar
         st.markdown("**\U0001F4DD Descrição da Receita**")
-
-        descricao = st.text_input(label="", placeholder="Ex: Salário - Janeiro")
+        descricao = st.text_input(
+            label="\U0001F4DD Descrição da Receita",
+            placeholder="Ex: Salário - Janeiro"
+        )
 
     # Validação em tempo real
     erros, alertas = validar_transacao_avancada(valor, descricao, data, "receita")
@@ -75,7 +80,7 @@ def new_receita():
     col_btn1, col_btn2 = st.columns(2)
     
     with col_btn1:
-        pode_salvar = len(erros) == 0 and valor > 0 and descricao.strip()
+        pode_salvar = len(erros) == 0 and valor > 051 and descricao.strip()
         
         if st.button(
             "\U0001F4BE Salvar Receita", 
@@ -97,7 +102,7 @@ def new_receita():
                 })
                 
                 if result.inserted_id:
-                    st.success("\u2705 Receita adicionada com sucesso!")
+                    st.success("\U00002705 Receita adicionada com sucesso!")
                     st.balloons()
                     
                     # Mostra próxima sugestão
@@ -108,10 +113,10 @@ def new_receita():
                     time.sleep(1)
                     st.rerun()
                 else:
-                    st.error("\u274C Erro ao salvar. Tente novamente.")
+                    st.error("\U0000274C Erro ao salvar. Tente novamente.")
                     
             except Exception as e:
-                st.error(f"\u274C Erro: {str(e)}")
+                st.error(f"\U0000274C Erro: {str(e)}")
     
     with col_btn2:
         if st.button("\U0001F6AB Cancelar", use_container_width=True):
@@ -125,8 +130,9 @@ def new_despesa():
     
     with col1:
         data = st.date_input(
-            "\U0001F4C5 Data da Despesa"
-            )
+            "\U0001F4C5 Data da Despesa",
+            help="\U0001F4A1 Dica: Use as setas ←→ para navegar entre os meses"
+        )
         
         # Subcategorias organizadas por frequência de uso
         subcategorias_ordenadas = [
@@ -150,21 +156,23 @@ def new_despesa():
         elif subcategoria == "Transporte" and valor > 150:
             st.info("\U0001F695 Despesa alta com transporte - viagem ou manutenção?")
     
-        with col2:
+    with col2:
         # Descrição inteligente
-            st.markdown("**📝 Descrição da Despesa**")
-        
-        descricao = st.text_input()
+        st.markdown("**\U0001F4DD Descrição da Despesa**")
+        descricao = st.text_input(
+            label="\U0001F4DD Descrição da Despesa",
+            placeholder="Ex: McDonald's, Nubank"
+        )
         
         # Dicas contextuais
         if subcategoria == "Fatura de Cartão":
-            st.info("💡 **Dica:** Inclua o banco (ex: 'Nubank', 'Itaú')")
+            st.info("\U0001F4A1 **Dica:** Inclua o banco (ex: 'Nubank', 'Itaú')")
         elif subcategoria in ["Alimentação", "Mercado"]:
-            st.info("💡 **Dica:** Inclua o local (ex: 'McDonald\'s', 'Extra')")
+            st.info("\U0001F4A1 **Dica:** Inclua o local (ex: 'McDonald\'s', 'Extra')")
         
         # Preview da transação
         if valor > 0 and descricao:
-            st.markdown("### 👀 Preview")
+            st.markdown("### \U0001F440 Preview")
             st.error(f"""
             **Data:** {data.strftime('%d/%m/%Y')}
             **Categoria:** {subcategoria}
@@ -189,14 +197,14 @@ def new_despesa():
             
             col_impact1, col_impact2 = st.columns(2)
             with col_impact1:
-                st.metric("💰 Saldo Atual", f"R$ {saldo_atual:,.2f}")
+                st.metric("\U0001F4B0 Saldo Atual", f"R$ {saldo_atual:,.2f}")
             with col_impact2:
-                st.metric("🔮 Saldo Após Compra", f"R$ {saldo_apos:,.2f}", f"-R$ {valor:,.2f}")
+                st.metric("\U0001F52E Saldo Após Compra", f"R$ {saldo_apos:,.2f}", f"-R$ {valor:,.2f}")
             
             if saldo_apos < 0:
-                st.error("🚨 **ATENÇÃO:** Esta despesa deixará seu saldo negativo!")
+                st.error("\U0001F6A8 **ATENÇÃO:** Esta despesa deixará seu saldo negativo!")
             elif saldo_apos < 100:
-                st.warning("⚠️ **CUIDADO:** Saldo ficará muito baixo após esta despesa")
+                st.warning("\U000026A0 **CUIDADO:** Saldo ficará muito baixo após esta despesa")
     except:
         pass  # Se der erro, apenas não mostra o impacto
     
@@ -220,7 +228,7 @@ def new_despesa():
             if pd.notna(gastos_hoje) and gastos_hoje > 0:
                 gastos_total_dia = gastos_hoje + valor
                 if gastos_total_dia > 200:
-                    st.warning(f"📊 **Gastos do dia:** R$ {gastos_hoje:.2f} + R$ {valor:.2f} = R$ {gastos_total_dia:.2f}")
+                    st.warning(f"\U0001F4CA **Gastos do dia:** R$ {gastos_hoje:.2f} + R$ {valor:.2f} = R$ {gastos_total_dia:.2f}")
     except:
         pass
     
@@ -231,7 +239,7 @@ def new_despesa():
         pode_salvar = len(erros) == 0 and valor > 0 and descricao.strip()
         
         if st.button(
-            "💾 Confirmar Despesa", 
+            "\U0001F4BE Confirmar Despesa", 
             type="primary", 
             disabled=not pode_salvar,
             use_container_width=True
@@ -250,30 +258,30 @@ def new_despesa():
                 })
                 
                 if result.inserted_id:
-                    st.success("✅ Despesa registrada com sucesso!")
+                    st.success("\U00002705 Despesa registrada com sucesso!")
                     
                     # Sugestões pós-despesa
                     if subcategoria in ["Mercado", "Compras Online"]:
-                        st.info("💡 **Dica:** Considere anotar os itens comprados para melhor controle")
+                        st.info("\U0001F4A1 **Dica:** Considere anotar os itens comprados para melhor controle")
                     elif valor > 500:
-                        st.info("💡 **Sugestão:** Que tal revisar seus objetivos financeiros?")
+                        st.info("\U0001F4A1 **Sugestão:** Que tal revisar seus objetivos financeiros?")
                     
                     import time
                     time.sleep(1)
                     st.rerun()
                 else:
-                    st.error("❌ Erro ao salvar")
+                    st.error("\U0000274C Erro ao salvar")
                     
             except Exception as e:
-                st.error(f"❌ Erro: {str(e)}")
+                st.error(f"\U0000274C Erro: {str(e)}")
     
     with col_btn2:
         # Botão para parcelar (futuro)
-        if st.button("💳 Parcelar", use_container_width=True, disabled=True):
-            st.info("🚧 Funcionalidade em desenvolvimento")
+        if st.button("\U0001F4B3 Parcelar", use_container_width=True, disabled=True):
+            st.info("\U0001F6A7 Funcionalidade em desenvolvimento")
     
     with col_btn3:
-        if st.button("🚫 Cancelar", use_container_width=True):
+        if st.button("\U0001F6AB Cancelar", use_container_width=True):
             st.rerun()
             
 
@@ -295,7 +303,7 @@ def quick_report():
         despesas_7d = ultimos_7_dias[ultimos_7_dias["Categoria Principal"] == "Despesa"]["Valor R$"].sum()
         
         return f"""
-        **📊 Últimos 7 dias:**
+        **\U0001F4CA Últimos 7 dias:**
         - Receitas: R$ {receitas_7d:,.2f}
         - Despesas: R$ {despesas_7d:,.2f}
         - Saldo: R$ {receitas_7d - despesas_7d:,.2f}
