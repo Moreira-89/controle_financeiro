@@ -1,7 +1,7 @@
 import streamlit as st
 from datetime import datetime
 from services.cartao_service import CartaoService
-from services.get_transacao import get_transacao_credito
+import pandas as pd
 import plotly.express as px
 
 def main():
@@ -466,15 +466,44 @@ def nova_compra_modal(cartao_id=None):
         if st.button("\U0001F6AB Cancelar", use_container_width=True):
             st.rerun()
 
-
 def view_transacoes_credito():
-    df = get_transacao_credito()
-
-    st.subheader("Transações do Cartão de Crédito")
-    st.dataframe(df,
-        use_container_width=True,
-        hide_index=True,
-        height=400)
+    service = CartaoService()
+    cartoes = service.listar_cartoes()
+    
+    if not cartoes:
+        st.info("Nenhum cartão cadastrado.")
+        return
+    
+    nomes_cartoes = [c["nome"] for c in cartoes]
+    cartao_selecionado = st.selectbox("Selecione o cartão", nomes_cartoes)
+    cartao_obj = next(c for c in cartoes if c["nome"] == cartao_selecionado)
+    
+    # Filtro de mês/ano
+    hoje = datetime.now()
+    mes_ano = st.selectbox(
+        "Filtrar por mês/ano",
+        options=[hoje.strftime("%Y-%m")] + [
+            (hoje.replace(month=m)).strftime("%Y-%m") for m in range(1, 13)
+        ]
+    )
+    
+    compras = service.listar_compras(cartao_obj["_id"], mes_ano=mes_ano)
+    
+    if not compras:
+        st.info("Nenhuma transação encontrada para este cartão neste período.")
+        return
+    
+    df = pd.DataFrame(compras)
+    df = df[["data_compra", "descricao", "categoria", "valor"]]
+    df.rename(columns={
+        "data_compra": "Data",
+        "descricao": "Descrição",
+        "categoria": "Categoria",
+        "valor": "Valor (R$)"
+    }, inplace=True)
+    
+    st.subheader(f"Transações do Cartão: {cartao_selecionado} ({mes_ano})")
+    st.dataframe(df, use_container_width=True, hide_index=True, height=400)
 
 if __name__ == "__main__":
     main()

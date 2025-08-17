@@ -1,5 +1,4 @@
 from services.new_transacao import new_receita, new_despesa
-from services.objetivos_service import ObjetivosService
 from services.criar_grafic import gerar_graficos
 from services.get_transacao import get_transacao
 from datetime import datetime, timedelta
@@ -49,7 +48,6 @@ def main():
         </style>
         """, unsafe_allow_html=True)
 
-       # Header principal
         col_header1, col_header3 = st.columns([3, 1])
 
         with col_header1:
@@ -61,8 +59,6 @@ def main():
             st.markdown("**Status do Mês:**")
             mes_atual = datetime.now().strftime("%m/%Y")
             st.info(f"\U0001F4C5 {mes_atual}")
-        
-        st.markdown('</div>', unsafe_allow_html=True)
 
         setup_sidebar()
 
