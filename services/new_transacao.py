@@ -55,16 +55,13 @@ def new_receita():
             "\U0001F4B0 Valor da Receita (R$)", 
             min_value=0.01, 
             format="%.2f",
-            help="\U0001F4A1 Valores positivos aumentam seu saldo"
         )
     
     with col2:
         # Descrição com autocompletar
         st.markdown("**\U0001F4DD Descrição da Receita**")
         
-        descricao = st.text_input(
-            help="\U0001F4A1 Seja específico para melhor controle"
-        )
+        descricao = st.text_input()
     
     # Validação em tempo real
     erros, alertas = validar_transacao_avancada(valor, descricao, data, "receita")
@@ -131,9 +128,8 @@ def new_despesa():
     
     with col1:
         data = st.date_input(
-            "\U0001F4C5 Data da Despesa",
-            help="\U0001F4A1 Dica: Para despesas recorrentes, use o mesmo dia do mês"
-        )
+            "\U0001F4C5 Data da Despesa"
+            )
         
         # Subcategorias organizadas por frequência de uso
         subcategorias_ordenadas = [
@@ -147,9 +143,7 @@ def new_despesa():
         valor = st.number_input(
             "\U0001F4B0 Valor da Despesa (R$)", 
             min_value=0.01, 
-            format="%.2f",
-            help="\U0001F4A1 Valores de despesa reduzem seu saldo"
-        )
+            format="%.2f")
         
         # Alertas por categoria
         if subcategoria == "Fatura de Cartão" and valor > 1000:
