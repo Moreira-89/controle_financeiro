@@ -2,9 +2,13 @@ import streamlit as st
 from datetime import datetime
 from services.cartao_service import CartaoService
 import pandas as pd
-import locale
 
-locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
+def format_brl(valor):
+    """Formata número para padrão brasileiro: R$ 1.381,86"""
+    try:
+        return f"R$ {valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    except Exception:
+        return "R$ 0,00"
 
 def main():
     st.set_page_config(
@@ -74,15 +78,15 @@ def render_estatisticas_gerais(service):
         st.metric("\U0001F4B3 Total de Cartões", stats["total_cartoes"])
     
     with col2:
-        st.metric("\U0001F4B0 Limite Total", f"R$ {locale.currency(stats['limite_total'], grouping=True, symbol=False)}")
+        st.metric("\U0001F4B0 Limite Total", format_brl(stats['limite_total']))
     
     with col3:
-        delta = f"R$ {locale.currency(stats['valor_usado'], grouping=True, symbol=False)}"
+        delta = format_brl(stats['valor_usado'])
         delta_color = "normal" if stats["percentual_usado"] < 50 else "inverse"
         st.metric("\U0001F6D2 Valor Usado", delta, delta_color=delta_color)
     
     with col4:
-        st.metric("\U0001F513 Limite Disponível", f"R$ {locale.currency(stats['limite_disponivel'], grouping=True, symbol=False)}")
+        st.metric("\U0001F513 Limite Disponível", format_brl(stats['limite_disponivel']))
     
     # Barra de progresso geral
     if stats["limite_total"] > 0:
@@ -149,11 +153,8 @@ def render_cartao_card(service, cartao):
             cor_limite += " limite-aviso"
         
         def formatar_moeda(valor):
-            """Formata valor para moeda brasileira usando locale"""
-            try:
-                return f"R$ {locale.currency(float(valor), grouping=True, symbol=False)}"
-            except (ValueError, TypeError):
-                return "R$ 0,00"
+            """Formata valor para moeda brasileira usando format_brl"""
+            return format_brl(valor)
         
         # Validação e formatação de datas
         dia_vencimento = str(cartao.get('dia_vencimento', '??')).zfill(2)
@@ -293,9 +294,11 @@ def nova_compra_modal(cartao_id=None):
 
         parcelas = st.number_input("\U0001F522 Parcelas", min_value=1, max_value=24, value=1)
         
+        valor = st.number_input("\U0001F4B0 Valor (R$)", min_value=0.01, step=0.01)
+
         if parcelas > 1 and valor > 0:
-                valor_parcela = valor / parcelas
-                st.info(f"\U0001F4A1 {parcelas}x de R$ {locale.currency(valor_parcela, grouping=True, symbol=False)}")
+            valor_parcela = valor / parcelas
+            st.info(f"\U0001F4A1 {parcelas}x de {format_brl(valor_parcela)}")
     
     with col2:
         descricao = st.text_input("\U0001F4DD Descrição", placeholder="Ex: Notebook Dell")
@@ -305,9 +308,6 @@ def nova_compra_modal(cartao_id=None):
             "Uber", "Farmácia", "Serviços de Streaming", "Outros"
         ])
         categoria = st.selectbox("\U0001F3F7\uFE0F Categoria", categorias)
-        
-        valor = st.number_input("\U0001F4B0 Valor (R$)", min_value=0.01, step=0.01)
-
     
     col_btn1, col_btn2 = st.columns(2)
     
@@ -378,7 +378,7 @@ def view_transacoes_credito():
         "valor": "Valor (R$)"
     }, inplace=True)
 
-    df["Valor (R$)"] = df["Valor (R$)"].apply(lambda v: locale.currency(v, grouping=True, symbol=False))
+    df["Valor (R$)"] = df["Valor (R$)"].apply(format_brl)
 
     st.subheader(f"Transações de Todos os Cartões ({mes_ano})")
     st.dataframe(df, use_container_width=True, hide_index=True, height=400)

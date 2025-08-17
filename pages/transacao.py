@@ -4,7 +4,13 @@ import pandas as pd
 import streamlit as st
 from datetime import datetime, timedelta
 import plotly.express as px
-import locale
+
+def format_brl(valor):
+    """Formata número para padrão brasileiro: R$ 1.381,86"""
+    try:
+        return f"R$ {valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    except Exception:
+        return "R$ 0,00"
 
 def main():
     st.set_page_config(
@@ -79,8 +85,6 @@ def setup_sidebar():
     if st.sidebar.button("\U0001F6AA Sair", icon=":material/logout:"):
         st.session_state.authenticated = False
         st.rerun()
-
-locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
 
 def render_filtros_avancados(df):
     """Filtros avançados para as transações"""
@@ -182,14 +186,14 @@ def render_metricas_periodo(df):
         st.metric("\U0001F4CA Transações", transacoes_count)
     
     with col_m2:
-        st.metric("\U0001F49A Receitas", f"R$ {locale.currency(receitas, grouping=True, symbol=False)}")
+        st.metric("\U0001F49A Receitas", format_brl(receitas))
     
     with col_m3:
-        st.metric("\U0001F4B8 Despesas", f"R$ {locale.currency(despesas, grouping=True, symbol=False)}")
+        st.metric("\U0001F4B8 Despesas", format_brl(despesas))
     
     with col_m4:
         delta_color = "normal" if saldo >= 0 else "inverse"
-        st.metric("\U0001F4B0 Saldo Período", f"R$ {locale.currency(saldo, grouping=True, symbol=False)}", delta_color=delta_color)
+        st.metric("\U0001F4B0 Saldo Período", format_brl(saldo), delta_color=delta_color)
 
 
 def render_visualizacoes(df):
@@ -258,8 +262,8 @@ def render_tabela_transacoes(df):
     df_display["Valor R$"] = pd.to_numeric(df_display["Valor R$"], errors='coerce')
     
     df_display["Valor Formatado"] = df_display.apply(lambda row: 
-        f"\U0001F49A +R$ {locale.currency(row['Valor R$'], grouping=True, symbol=False)}" if row['Categoria Principal'] == 'Receita' 
-        else f"\U0001F4B8 -R$ {locale.currency(row['Valor R$'], grouping=True, symbol=False)}", axis=1)
+        f"\U0001F49A +{format_brl(row['Valor R$'])}" if row['Categoria Principal'] == 'Receita' 
+        else f"\U0001F4B8 -{format_brl(row['Valor R$'])}", axis=1)
     
     # Ordenar por data (mais recente primeiro)
     df_display['Data'] = pd.to_datetime(df_display['Data'], format='%d/%m/%Y', errors='coerce')
