@@ -11,40 +11,7 @@ def main():
         page_icon="\U0001F4B3"
     )
     
-    # CSS customizado
-    st.markdown("""
-    <style>
-    .cartao-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 1.5rem;
-        border-radius: 15px;
-        margin-bottom: 1rem;
-        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-    }
-    .limite-bar {
-        background: rgba(255,255,255,0.3);
-        border-radius: 10px;
-        height: 8px;
-        margin-top: 0.5rem;
-    }
-    .limite-usado {
-        background: #27ae60;
-        height: 100%;
-        border-radius: 10px;
-        transition: width 0.3s ease;
-    }
-    .limite-alerta {
-        background: #e74c3c;
-    }
-    .limite-aviso {
-        background: #f39c12;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-    
-    # Header
-    col_h1, col_h2, col_h3 = st.columns([2, 2, 1])
+    col_h1, col_h2 = st.columns([2, 2])
     
     with col_h1:
         st.title("\U0001F4B3 Meus Cartões de Crédito")
@@ -58,23 +25,12 @@ def main():
         with col_btn2:
             if st.button("\U0001F6D2 Nova Compra", type="secondary", use_container_width=True):
                 nova_compra_modal()
-    
-    with col_h3:
-        if st.button("\U0001F4CA Relatórios", use_container_width=True):
-            st.session_state.show_relatorio_cartoes = not st.session_state.get('show_relatorio_cartoes', False)
-    
-    # Sidebar
+
     setup_sidebar()
     
-    # Serviço
     service = CartaoService()
     
-    # Estatísticas gerais
     render_estatisticas_gerais(service)
-    
-    # Relatório (se ativado)
-    if st.session_state.get('show_relatorio_cartoes', False):
-        render_relatorio_completo(service)
     
     # Lista de cartões
     render_cartoes(service)
@@ -147,7 +103,7 @@ def render_cartoes(service):
     st.markdown("### \U0001F4B3 Seus Cartões")
     
     # Grid de cartões
-    cols_per_row = 1
+    cols_per_row = 2
     for i in range(0, len(cartoes), cols_per_row):
         cols = st.columns(cols_per_row)
         
@@ -241,65 +197,6 @@ def render_cartao_card(service, cartao):
         st.error(f"Erro ao renderizar cartão: {str(e)}")
         st.exception(e)
 
-def render_relatorio_completo(service):
-    """Renderiza relatório completo dos cartões"""
-    with st.expander("\U0001F4CA Relatório Detalhado", expanded=True):
-        cartoes = service.listar_cartoes()
-        
-        if not cartoes:
-            st.info("Nenhum cartão para gerar relatório")
-            return
-        
-        # Preparar dados para gráficos
-        dados_limite = []
-        dados_gastos_categoria = {}
-        
-        for cartao in cartoes:
-            valor_usado = service.calcular_fatura_atual(cartao["_id"])
-            dados_limite.append({
-                "Cartão": cartao["nome"],
-                "Limite": cartao["limite"],
-                "Usado": valor_usado,
-                "Disponível": cartao["limite"] - valor_usado
-            })
-            
-            # Compras por categoria
-            compras = service.listar_compras(cartao["_id"])
-            for compra in compras:
-                categoria = compra["categoria"]
-                valor = compra["valor_parcela"] if compra["parcelas"] > 1 else compra["valor"]
-                
-                if categoria not in dados_gastos_categoria:
-                    dados_gastos_categoria[categoria] = 0
-                dados_gastos_categoria[categoria] += valor
-        
-        col_g1, col_g2 = st.columns(2)
-        
-        with col_g1:
-            # Gráfico de limite usado vs disponível
-            if dados_limite:
-                import pandas as pd
-                df_limite = pd.DataFrame(dados_limite)
-                
-                fig_limite = px.bar(
-                    df_limite,
-                    x="Cartão",
-                    y=["Usado", "Disponível"],
-                    title="\U0001F4B3 Limite Usado vs Disponível",
-                    color_discrete_map={"Usado": "#e74c3c", "Disponível": "#27ae60"}
-                )
-                st.plotly_chart(fig_limite, use_container_width=True)
-        
-        with col_g2:
-            # Gráfico de gastos por categoria
-            if dados_gastos_categoria:
-                fig_categoria = px.pie(
-                    values=list(dados_gastos_categoria.values()),
-                    names=list(dados_gastos_categoria.keys()),
-                    title="\U0001F6D2 Gastos por Categoria"
-                )
-                st.plotly_chart(fig_categoria, use_container_width=True)
-
 @st.dialog("\u2795 Novo Cartão")  # ➕
 def novo_cartao_modal():
     """Modal para adicionar novo cartão"""
@@ -311,7 +208,7 @@ def novo_cartao_modal():
         nome = st.text_input("\U0001F4B3 Nome do Cartão", placeholder="Ex: Cartão Principal")
         banco = st.text_input("\U0001F3E6 Banco", placeholder="Ex: Nubank, Itaú, Bradesco")
     
-        bandeira = st.selectbox("\U0001F3F7\uFE0F Bandeira", [  # 🏷️
+        bandeira = st.selectbox("\U0001F3F7\uFE0F Bandeira", [
             "Visa", "Mastercard", "Elo", "American Express", "Hipercard"
         ])
         limite = st.number_input("\U0001F4B0 Limite (R$)", min_value=100.0, step=100.0, value=1000.0)
@@ -411,32 +308,10 @@ def nova_compra_modal(cartao_id=None):
         valor = st.number_input("\U0001F4B0 Valor (R$)", min_value=0.01, step=0.01)
 
     
-    # Validações
-    erros = []
-    if not descricao.strip():
-        erros.append("Descrição é obrigatória")
-    if valor <= 0:
-        erros.append("Valor deve ser maior que zero")
-    if data_compra > datetime.now().date():
-        erros.append("Data não pode ser no futuro")
-    
-    # Alertas
-    alertas = []
-    if valor > 1000:
-        alertas.append("\U0001F4B0 Compra de alto valor! Confirme se está correto.")
-    if parcelas > 12:
-        alertas.append("\U0001F4C5 Muitas parcelas podem comprometer o orçamento futuro")
-    
-    for alerta in alertas:
-        st.warning(alerta)
-    for erro in erros:
-        st.error(f"\u26A0\uFE0F {erro}")
-
-    
     col_btn1, col_btn2 = st.columns(2)
     
     with col_btn1:
-        if st.button("\U0001F6D2 Registrar Compra", type="primary", disabled=len(erros) > 0, use_container_width=True):
+        if st.button("\U0001F6D2 Registrar Compra", type="primary", use_container_width=True):
             dados_compra = {
                 "cartao_id": cartao_escolhido["_id"],
                 "descricao": descricao.strip(),
@@ -473,12 +348,7 @@ def view_transacoes_credito():
     if not cartoes:
         st.info("Nenhum cartão cadastrado.")
         return
-    
-    nomes_cartoes = [c["nome"] for c in cartoes]
-    cartao_selecionado = st.selectbox("Selecione o cartão", nomes_cartoes)
-    cartao_obj = next(c for c in cartoes if c["nome"] == cartao_selecionado)
-    
-    # Filtro de mês/ano
+
     hoje = datetime.now()
     mes_ano = st.selectbox(
         "Filtrar por mês/ano",
@@ -486,23 +356,28 @@ def view_transacoes_credito():
             (hoje.replace(month=m)).strftime("%Y-%m") for m in range(1, 13)
         ]
     )
-    
-    compras = service.listar_compras(cartao_obj["_id"], mes_ano=mes_ano)
-    
-    if not compras:
-        st.info("Nenhuma transação encontrada para este cartão neste período.")
+
+    todas_compras = []
+    for cartao in cartoes:
+        compras = service.listar_compras(cartao["_id"], mes_ano=mes_ano)
+        for compra in compras:
+            compra["Cartão"] = cartao["nome"]
+            todas_compras.append(compra)
+
+    if not todas_compras:
+        st.info("Nenhuma transação encontrada para este período.")
         return
-    
-    df = pd.DataFrame(compras)
-    df = df[["data_compra", "descricao", "categoria", "valor"]]
+
+    df = pd.DataFrame(todas_compras)
+    df = df[["Cartão", "data_compra", "descricao", "categoria", "valor"]]
     df.rename(columns={
         "data_compra": "Data",
         "descricao": "Descrição",
         "categoria": "Categoria",
         "valor": "Valor (R$)"
     }, inplace=True)
-    
-    st.subheader(f"Transações do Cartão: {cartao_selecionado} ({mes_ano})")
+
+    st.subheader(f"Transações de Todos os Cartões ({mes_ano})")
     st.dataframe(df, use_container_width=True, hide_index=True, height=400)
 
 if __name__ == "__main__":
