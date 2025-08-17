@@ -157,21 +157,7 @@ def new_despesa():
         # Descrição inteligente
             st.markdown("**📝 Descrição da Despesa**")
         
-        # Sugestões baseadas na categoria
-        sugestoes_categoria = {
-            "Alimentação": ["Almoço", "Jantar", "Lanche", "Delivery", "Restaurante"],
-            "Mercado": ["Compras mensais", "Feira", "Supermercado", "Açougue"],
-            "Transporte": ["Uber", "Gasolina", "Ônibus", "Metrô", "Taxi"],
-            "Casa": ["Conta de luz", "Água", "Internet", "Gás", "Aluguel"],
-            "Compras Online": ["Amazon", "Magazine Luiza", "Mercado Livre", "Shopee"],
-            "Farmácia": ["Medicamentos", "Remédios", "Farmácia"],
-            "Outros": ["Diversos", "Variados"]
-        }
-        
-        descricao = st.text_input(
-            placeholder=f"Ex: {subcategoria} - {data.strftime('%d/%m')}",
-            help="💡 Detalhe o que foi comprado para melhor controle"
-        )
+        descricao = st.text_input()
         
         # Dicas contextuais
         if subcategoria == "Fatura de Cartão":
