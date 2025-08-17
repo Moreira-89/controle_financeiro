@@ -48,7 +48,6 @@ def main():
         st.markdown("**Controle completo das suas movimentações**")
     
     with col_h2:
-        # Actions sempre visíveis
         col_a1, col_a2 = st.columns(2)
         with col_a1:
             if st.button("\U0001F49A Nova Receita", type="primary", use_container_width=True):
@@ -58,7 +57,6 @@ def main():
                 new_despesa()
     
     with col_h3:
-        # Relatório rápido
         if st.button("\U0001F4CA Relatório", use_container_width=True):
             st.session_state.show_quick_report = not st.session_state.get('show_quick_report', False)
     
@@ -105,57 +103,13 @@ def setup_sidebar():
     st.sidebar.markdown("### \U0001F4CA Navegação")
     st.sidebar.page_link("app.py", label="\U0001F3E0 Dashboard", icon=":material/home:")
     st.sidebar.page_link("pages/objetivos.py", label="\U0001F3AF Objetivos", icon=":material/star:")
-    
-    st.sidebar.markdown("---")
-    
-    # Estatísticas rápidas
-    try:
-        df = get_transacao()
-        if not df.empty:
-            df_numeric = df.copy()
-            df_numeric["Valor R$"] = pd.to_numeric(df_numeric["Valor R$"], errors='coerce')
-            
-            total_transacoes = len(df)
-            receitas_total = df_numeric[df_numeric["Categoria Principal"] == "Receita"]["Valor R$"].sum()
-            despesas_total = df_numeric[df_numeric["Categoria Principal"] == "Despesa"]["Valor R$"].sum()
-            
-            st.sidebar.markdown("### \U0001F4C8 Resumo Geral")
-            st.sidebar.metric("Total Transações", total_transacoes)
-            st.sidebar.metric("Receitas", f"R$ {receitas_total:,.2f}")
-            st.sidebar.metric("Despesas", f"R$ {despesas_total:,.2f}")
-            
-            saldo = receitas_total - despesas_total
-            if saldo > 0:
-                st.sidebar.success(f"\U0001F4B0 Saldo: R$ {saldo:,.2f}")
-            else:
-                st.sidebar.error(f"\U0001F494 Déficit: R$ {abs(saldo):,.2f}")
-    except:
-        pass
+    st.sidebar.page_link("pages/cartao_credito.py", label="\U0001F4B3 Cartões de Crédito", icon=":material/credit_card:")
     
     st.sidebar.markdown("---")
     
     if st.sidebar.button("\U0001F6AA Sair", icon=":material/logout:"):
         st.session_state.authenticated = False
         st.rerun()
-
-def render_empty_state():
-    """Tela quando não há transações"""
-    st.markdown("""
-    <div style='text-align: center; padding: 3rem;'>
-        <h3>\U0001F4CB Nenhuma transação encontrada</h3>
-        <p>Comece adicionando sua primeira movimentação financeira!</p>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        col_btn1, col_btn2 = st.columns(2)
-        with col_btn1:
-            if st.button("\U0001F49A Primeira Receita", type="primary", use_container_width=True):
-                new_receita()
-        with col_btn2:
-            if st.button("\U0001F4B8 Primeira Despesa", type="secondary", use_container_width=True):
-                new_despesa()
 
 def render_filtros_avancados(df):
     """Filtros avançados para as transações"""

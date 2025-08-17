@@ -103,31 +103,9 @@ def setup_sidebar():
     st.sidebar.markdown("### \U0001F4CA Navegação")
     st.sidebar.page_link("pages/transacao.py", label="\U0001F4CB Extrato Completo", icon=":material/list_alt:")
     st.sidebar.page_link("pages/objetivos.py", label="\U0001F3AF Meus Objetivos", icon=":material/star:")
+    st.sidebar.page_link("pages/cartao_credito.py", label="\U0001F4B3 Cartões de Crédito", icon=":material/credit_card:")
     
     st.sidebar.markdown("---")
-    
-    st.sidebar.markdown("### \u26A1 Atalhos")
-    if st.sidebar.button("\U0001F4CA Ver Relatório Mensal"):
-        st.session_state.show_monthly_report = True
-    
-    if st.sidebar.button("\U0001F3AF Status dos Objetivos"):
-        st.switch_page("pages/objetivos.py")
-    
-    st.sidebar.markdown("---")
-    
-    df = get_transacao()
-    if not df.empty:
-        df_numeric = df.copy()
-        df_numeric["Valor R$"] = pd.to_numeric(df_numeric["Valor R$"], errors='coerce')
-        saldo = (df_numeric[df_numeric["Categoria Principal"] == "Receita"]["Valor R$"].sum() - 
-                df_numeric[df_numeric["Categoria Principal"] == "Despesa"]["Valor R$"].sum())
-        
-        if saldo > 0:
-            st.sidebar.success(f"\U0001F49A Saldo: R$ {saldo:,.2f}")
-        elif saldo < 0:
-            st.sidebar.error(f"\U0001F494 Déficit: R$ {abs(saldo):,.2f}")
-        else:
-            st.sidebar.info("\u2696 Saldo Zerado")
     
     if st.sidebar.button("\U0001F6AA Sair", icon=":material/logout:"):
         st.session_state.authenticated = False

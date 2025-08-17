@@ -9,10 +9,15 @@ def renderizar_objetivos():
     layout="wide"
     )
     st.sidebar.markdown("### Navegação")
-    st.sidebar.page_link("pages/transacao.py", label="Extrato de Transações", icon=":material/list_alt:")
-    st.sidebar.page_link("pages/objetivos.py", label="Objetivos", icon=":material/star:")
-    st.sidebar.page_link("app.py", label="Home", icon=":material/home:")
+    st.sidebar.page_link("pages/transacao.py", label="\U0001F4CB Transações", icon=":material/list_alt:")
+    st.sidebar.page_link("pages/objetivos.py", label="\U0001F3AF Objetivos", icon=":material/star:")
+    st.sidebar.page_link("app.py", label="\U0001F3E0 Home", icon=":material/home:")
+
     st.sidebar.markdown("---")
+    
+    if st.sidebar.button("\U0001F6AA Sair", icon=":material/logout:"):
+        st.session_state.authenticated = False
+        st.rerun()
     
     st.title("\U0001F3AF Meus Objetivos Financeiros")
     
