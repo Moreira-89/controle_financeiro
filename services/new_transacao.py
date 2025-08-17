@@ -39,16 +39,9 @@ def new_receita():
     
     col1, col2 = st.columns(2)
     
-    with col1:
-        # Data com valor padrão inteligente
-        data_padrao = datetime.now().date()
-        # Se é início do mês, sugere dia do salário
-        if data_padrao.day <= 5:
-            data_padrao = data_padrao.replace(day=5)
-        
+    with col1:        
         data = st.date_input(
-            "\U0001F4C5 Data da Receita", 
-            value=data_padrao,
+            "\U0001F4C5 Data da Receita",
             help="\U0001F4A1 Dica: Use as setas ←→ para navegar entre os meses"
         )
         
@@ -70,19 +63,8 @@ def new_receita():
         st.markdown("**\U0001F4DD Descrição da Receita**")
         
         descricao = st.text_input(
-            placeholder=f"Ex: {subcategoria} - {datetime.now().strftime('%B %Y')}",
             help="\U0001F4A1 Seja específico para melhor controle"
         )
-        
-        # Preview da transação
-        if valor > 0 and descricao:
-            st.markdown("### \U0001F440 Preview")
-            st.success(f"""
-            **Data:** {data.strftime('%d/%m/%Y')}
-            **Tipo:** {subcategoria}
-            **Descrição:** {descricao}
-            **Valor:** R$ {valor:,.2f}
-            """)
     
     # Validação em tempo real
     erros, alertas = validar_transacao_avancada(valor, descricao, data, "receita")
