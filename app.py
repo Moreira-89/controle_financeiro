@@ -66,6 +66,8 @@ def main():
 
         setup_sidebar()
 
+        df = get_transacao()
+
         df_numeric = df.copy()
         df_numeric["Valor R$"] = pd.to_numeric(df_numeric["Valor R$"], errors='coerce')
         
