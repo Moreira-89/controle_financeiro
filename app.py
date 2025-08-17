@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from auth.login import login
 import streamlit as st
 import pandas as pd
+import locale
 
 
 def main():
@@ -39,8 +40,8 @@ def main():
         df = get_transacao()
 
         df_numeric = df.copy()
-        df_numeric["Valor R$"] = pd.to_numeric(df_numeric["Valor R$"], errors='coerce')
-        
+        df_numeric["Valor R$"] = pd.to_numeric(df_numeric["Valor R$"], errors='coerce', downcast='float')
+
         render_dashboard_metrics(df_numeric)
         
         render_smart_insights(df_numeric)
@@ -85,28 +86,33 @@ def render_dashboard_metrics(df):
     total_receitas = df[df["Categoria Principal"] == "Receita"]["Valor R$"].sum()
     total_despesas = df[df["Categoria Principal"] == "Despesa"]["Valor R$"].sum()
     saldo_total = total_receitas - total_despesas
-    
+    saldo_total = locale.currency(saldo_total, grouping=True, symbol=False)
+
     receitas_mes = df_mes[df_mes["Categoria Principal"] == "Receita"]["Valor R$"].sum()
     despesas_mes = df_mes[df_mes["Categoria Principal"] == "Despesa"]["Valor R$"].sum()
     
     col1, col2, col3= st.columns(3)
+
+    locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
+    receitas_mes = locale.currency(receitas_mes, grouping=True, symbol=False)
+    despesas_mes = locale.currency(despesas_mes, grouping=True, symbol=False)
     
     with col1:        
         st.metric(
             "\U0001F49A Receitas Total",
-            f"R$ {receitas_mes:,.2f}"
+            f"R$ {receitas_mes}"
         )
     
     with col2:        
         st.metric(
             "\U0001F4B8 Despesas Total",
-            f"R$ {despesas_mes:,.2f}"
+            f"R$ {despesas_mes}"
         )
     
     with col3:
         st.metric(
             "\U0001F4B0 Saldo Total",
-            f"R$ {saldo_total:,.2f}",
+            f"R$ {saldo_total}",
         )
     
 def render_smart_insights(df):
@@ -124,7 +130,7 @@ def render_smart_insights(df):
         insights.append({
             "tipo": "info",
             "titulo": "\U0001F4B3 Maior Categoria de Gasto",
-            "texto": f"Você gastou mais em **{categoria_maior_gasto}**: R$ {valor_maior_gasto:,.2f}"
+            "texto": f"Você gastou mais em **{categoria_maior_gasto}**: R$ {locale.currency(valor_maior_gasto, grouping=True, symbol=False)}"
         })
     
     hoje = datetime.now()
@@ -139,13 +145,13 @@ def render_smart_insights(df):
             insights.append({
                 "tipo": "warning",
                 "titulo": "\U0001F4C8 Gastos da Semana",
-                "texto": f"Média diária: R$ {media_diaria:.2f}. Considere revisar os gastos."
+                "texto": f"Média diária: R$ {locale.currency(media_diaria, grouping=True, symbol=False)}. Considere revisar os gastos."
             })
         else:
             insights.append({
                 "tipo": "success",
                 "titulo": "\U0001F4C9 Gastos Controlados",
-                "texto": f"Média diária: R$ {media_diaria:.2f}. Parabéns pelo controle!"
+                "texto": f"Média diária: R$ {locale.currency(media_diaria, grouping=True, symbol=False)}. Parabéns pelo controle!"
             })
     
     receitas_total = df[df["Categoria Principal"] == "Receita"]["Valor R$"].sum()

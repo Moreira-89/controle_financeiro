@@ -4,7 +4,7 @@ import pandas as pd
 import streamlit as st
 from datetime import datetime, timedelta
 import plotly.express as px
-import plotly.graph_objects as go
+import locale
 
 def main():
     st.set_page_config(
@@ -12,33 +12,6 @@ def main():
         page_title="Minhas Transações",
         page_icon="\U0001F4CB"
     )
-    
-    # CSS personalizado
-    st.markdown("""
-    <style>
-    .transacao-header {
-        background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
-        color: white;
-        padding: 1rem;
-        border-radius: 10px;
-        margin-bottom: 1rem;
-    }
-    .filtro-box {
-        background: #f8f9fa;
-        padding: 1rem;
-        border-radius: 8px;
-        border-left: 4px solid #74b9ff;
-        margin-bottom: 1rem;
-    }
-    .metric-small {
-        text-align: center;
-        padding: 0.5rem;
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    </style>
-    """, unsafe_allow_html=True)
     
     # Header da página
     col_h1, col_h2, col_h3 = st.columns([2, 2, 1])
@@ -106,6 +79,8 @@ def setup_sidebar():
     if st.sidebar.button("\U0001F6AA Sair", icon=":material/logout:"):
         st.session_state.authenticated = False
         st.rerun()
+
+locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
 
 def render_filtros_avancados(df):
     """Filtros avançados para as transações"""
@@ -207,14 +182,15 @@ def render_metricas_periodo(df):
         st.metric("\U0001F4CA Transações", transacoes_count)
     
     with col_m2:
-        st.metric("\U0001F49A Receitas", f"R$ {receitas:,.2f}")
+        st.metric("\U0001F49A Receitas", f"R$ {locale.currency(receitas, grouping=True, symbol=False)}")
     
     with col_m3:
-        st.metric("\U0001F4B8 Despesas", f"R$ {despesas:,.2f}")
+        st.metric("\U0001F4B8 Despesas", f"R$ {locale.currency(despesas, grouping=True, symbol=False)}")
     
     with col_m4:
         delta_color = "normal" if saldo >= 0 else "inverse"
-        st.metric("\U0001F4B0 Saldo Período", f"R$ {saldo:,.2f}", delta_color=delta_color)
+        st.metric("\U0001F4B0 Saldo Período", f"R$ {locale.currency(saldo, grouping=True, symbol=False)}", delta_color=delta_color)
+
 
 def render_visualizacoes(df):
     """Visualizações das transações"""
@@ -281,10 +257,9 @@ def render_tabela_transacoes(df):
     df_display = df.copy()
     df_display["Valor R$"] = pd.to_numeric(df_display["Valor R$"], errors='coerce')
     
-    # Formatar valores
     df_display["Valor Formatado"] = df_display.apply(lambda row: 
-        f"\U0001F49A +R$ {row['Valor R$']:,.2f}" if row['Categoria Principal'] == 'Receita' 
-        else f"\U0001F4B8 -R$ {row['Valor R$']:,.2f}", axis=1)
+        f"\U0001F49A +R$ {locale.currency(row['Valor R$'], grouping=True, symbol=False)}" if row['Categoria Principal'] == 'Receita' 
+        else f"\U0001F4B8 -R$ {locale.currency(row['Valor R$'], grouping=True, symbol=False)}", axis=1)
     
     # Ordenar por data (mais recente primeiro)
     df_display['Data'] = pd.to_datetime(df_display['Data'], format='%d/%m/%Y', errors='coerce')

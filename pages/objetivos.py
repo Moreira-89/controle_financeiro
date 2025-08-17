@@ -1,6 +1,9 @@
 from services.objetivos_service import ObjetivosService
 import streamlit as st
 from datetime import datetime, timedelta
+import locale
+
+locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
 
 def renderizar_objetivos():
 
@@ -37,7 +40,6 @@ def renderizar_objetivos():
             col1, col2, col3 = st.columns([2, 1, 1])
             
             with col1:
-
                 progresso = service.calcular_progresso(
                     objetivo['valor_atual'], 
                     objetivo['valor_meta']
@@ -49,8 +51,8 @@ def renderizar_objetivos():
             with col2:
                 st.metric(
                     "\U0001F4B0 Valor Atual",
-                    f"R$ {objetivo['valor_atual']:,.2f}",
-                    f"R$ {objetivo['valor_meta'] - objetivo['valor_atual']:,.2f} restantes"
+                    f"R$ {locale.currency(objetivo['valor_atual'], grouping=True, symbol=False)}",
+                    f"R$ {locale.currency(objetivo['valor_meta'] - objetivo['valor_atual'], grouping=True, symbol=False)} restantes"
                 )
             
             with col3:
@@ -133,11 +135,11 @@ def atualizar_objetivo_modal(objetivo):
     service = ObjetivosService()
     
     st.write(f"**Objetivo:** {objetivo['titulo']}")
-    st.write(f"**Meta:** R$ {objetivo['valor_meta']:,.2f}")
+    st.write(f"**Meta:** R$ {locale.currency(objetivo['valor_meta'], grouping=True, symbol=False)}")
     
     col1, col2 = st.columns(2)
     with col1:
-        st.write(f"**Valor Atual:** R$ {objetivo['valor_atual']:,.2f}")
+        st.write(f"**Valor Atual:** R$ {locale.currency(objetivo['valor_atual'], grouping=True, symbol=False)}")
         progresso_atual = service.calcular_progresso(objetivo['valor_atual'], objetivo['valor_meta'])
         st.progress(progresso_atual / 100)
         st.write(f"**Progresso:** {progresso_atual:.1f}%")
@@ -157,12 +159,12 @@ def atualizar_objetivo_modal(objetivo):
             diferenca = novo_valor - objetivo['valor_atual']
             
             if diferenca > 0:
-                st.success(f"\U0001F4C8 +R$ {diferenca:,.2f}")
+                st.success(f"\U0001F4C8 +R$ {locale.currency(diferenca, grouping=True, symbol=False)}")
             else:
-                st.error(f"\U0001F4C9 R$ {diferenca:,.2f}")
-            
-            st.info(f"\U0001F3AF Novo progresso: {novo_progresso:.1f}%")
-    
+                st.error(f"\U0001F4C9 R$ {locale.currency(diferenca, grouping=True, symbol=False)}")
+
+            st.info(f"\U0001F3AF Novo progresso: {locale.currency(novo_progresso, grouping=True, symbol=False)}")
+
     st.markdown("**\u26A1 Adição Rápida:**")
     col_add1, col_add2, col_add3, col_add4 = st.columns(4)
     
@@ -279,9 +281,9 @@ def editar_objetivo_modal(objetivo):
     if titulo != objetivo['titulo']:
         mudancas.append(f"\U0001F4DD Título: {objetivo['titulo']} → {titulo}")
     if valor_meta != objetivo['valor_meta']:
-        mudancas.append(f"\U0001F48E Meta: R$ {objetivo['valor_meta']:,.2f} → R$ {valor_meta:,.2f}")
+        mudancas.append(f"\U0001F48E Meta: R$ {locale.currency(objetivo['valor_meta'], grouping=True, symbol=False)} → R$ {locale.currency(valor_meta, grouping=True, symbol=False)}")
     if valor_atual != objetivo['valor_atual']:
-        mudancas.append(f"\U0001F4B0 Atual: R$ {objetivo['valor_atual']:,.2f} → R$ {valor_atual:,.2f}")
+        mudancas.append(f"\U0001F4B0 Atual: R$ {locale.currency(objetivo['valor_atual'], grouping=True, symbol=False)} → R$ {locale.currency(valor_atual, grouping=True, symbol=False)}")
     if str(prazo) != objetivo['prazo']:
         mudancas.append(f"\U0001F4C5 Prazo: {objetivo['prazo']} → {prazo}")
     

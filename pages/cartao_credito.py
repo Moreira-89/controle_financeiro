@@ -2,7 +2,9 @@ import streamlit as st
 from datetime import datetime
 from services.cartao_service import CartaoService
 import pandas as pd
-import plotly.express as px
+import locale
+
+locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
 
 def main():
     st.set_page_config(
@@ -72,15 +74,15 @@ def render_estatisticas_gerais(service):
         st.metric("\U0001F4B3 Total de Cartões", stats["total_cartoes"])
     
     with col2:
-        st.metric("\U0001F4B0 Limite Total", f"R$ {stats['limite_total']:,.2f}")
+        st.metric("\U0001F4B0 Limite Total", f"R$ {locale.currency(stats['limite_total'], grouping=True, symbol=False)}")
     
     with col3:
-        delta = f"R$ {stats['valor_usado']:,.2f}"
+        delta = f"R$ {locale.currency(stats['valor_usado'], grouping=True, symbol=False)}"
         delta_color = "normal" if stats["percentual_usado"] < 50 else "inverse"
         st.metric("\U0001F6D2 Valor Usado", delta, delta_color=delta_color)
     
     with col4:
-        st.metric("\U0001F513 Limite Disponível", f"R$ {stats['limite_disponivel']:,.2f}")
+        st.metric("\U0001F513 Limite Disponível", f"R$ {locale.currency(stats['limite_disponivel'], grouping=True, symbol=False)}")
     
     # Barra de progresso geral
     if stats["limite_total"] > 0:
@@ -146,11 +148,10 @@ def render_cartao_card(service, cartao):
         elif percentual_usado > 70:
             cor_limite += " limite-aviso"
         
-        # Formatação segura dos valores
         def formatar_moeda(valor):
-            """Formata valor para moeda brasileira"""
+            """Formata valor para moeda brasileira usando locale"""
             try:
-                return f"R$ {float(valor):,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
+                return f"R$ {locale.currency(float(valor), grouping=True, symbol=False)}"
             except (ValueError, TypeError):
                 return "R$ 0,00"
         
@@ -292,9 +293,9 @@ def nova_compra_modal(cartao_id=None):
 
         parcelas = st.number_input("\U0001F522 Parcelas", min_value=1, max_value=24, value=1)
         
-        if parcelas > 1:
-            valor_parcela = valor / parcelas
-            st.info(f"\U0001F4A1 {parcelas}x de R$ {valor_parcela:.2f}")
+        if parcelas > 1 and valor > 0:
+                valor_parcela = valor / parcelas
+                st.info(f"\U0001F4A1 {parcelas}x de R$ {locale.currency(valor_parcela, grouping=True, symbol=False)}")
     
     with col2:
         descricao = st.text_input("\U0001F4DD Descrição", placeholder="Ex: Notebook Dell")
@@ -376,6 +377,8 @@ def view_transacoes_credito():
         "categoria": "Categoria",
         "valor": "Valor (R$)"
     }, inplace=True)
+
+    df["Valor (R$)"] = df["Valor (R$)"].apply(lambda v: locale.currency(v, grouping=True, symbol=False))
 
     st.subheader(f"Transações de Todos os Cartões ({mes_ano})")
     st.dataframe(df, use_container_width=True, hide_index=True, height=400)
