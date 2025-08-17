@@ -73,10 +73,6 @@ def main():
     # Carrega e processa dados
     df = get_transacao()
     
-    if df.empty:
-        render_empty_state()
-        return
-    
     # Filtros avançados
     df_filtered = render_filtros_avancados(df)
     

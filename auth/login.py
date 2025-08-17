@@ -19,7 +19,7 @@ def login():
         search_email = st.text_input("Email:", key="email_login", width=500)
         search_senha = st.text_input("Senha:", type="password", key="senha_login", width=500)
 
-        if st.button("Continue", width=500):
+        if st.button("Continue", width=500, type="primary"):
             usuario = users.find_one({"email": search_email})
             if usuario == None:
                 st.error("Usuário não encontrado!")
