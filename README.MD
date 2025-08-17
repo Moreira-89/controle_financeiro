@@ -19,22 +19,6 @@ Este é um projeto pessoal desenvolvido para ajudar no controle das minhas finan
 - PyMongo
 - Bcrypt
 
-## Como executar
-
-1. Instale as dependências:
-    ```sh
-    pip install -r requirements.txt
-    ```
-2. Configure o acesso ao MongoDB em `.streamlit/secrets.toml`:
-    ```
-    [secrets]
-    URL_CONNECTION_MONGO = "mongodb://usuario:senha@host:porta"
-    ```
-3. Execute o sistema:
-    ```sh
-    streamlit run app.py
-    ```
-
 ## Estrutura do Projeto
 
 - `app.py`: Página principal do dashboard.
