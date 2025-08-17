@@ -52,19 +52,17 @@ def main():
     # Carrega e processa dados
     df = get_transacao()
     
-    # Filtros avançados
-    df_filtered = render_filtros_avancados(df)
-    
     # Métricas do período filtrado
-    render_metricas_periodo(df_filtered)
+    render_metricas_periodo(df)
     
+    st.markdown("---")
     # Visualizações
-    render_visualizacoes(df_filtered)
+    render_visualizacoes(df)
     
     st.markdown("---")
     
     # Tabela de transações melhorada
-    render_tabela_transacoes(df_filtered)
+    render_tabela_transacoes(df)
 
 def setup_sidebar():
     """Sidebar melhorada para transações"""
@@ -85,86 +83,6 @@ def setup_sidebar():
     if st.sidebar.button("\U0001F6AA Sair", icon=":material/logout:"):
         st.session_state.authenticated = False
         st.rerun()
-
-def render_filtros_avancados(df):
-    """Filtros avançados para as transações"""
-    st.markdown('<div class="filtro-box">', unsafe_allow_html=True)
-    st.markdown("### \U0001F50D Filtros Avançados")
-    
-    col_f1, col_f2, col_f3, col_f4 = st.columns(4)
-    
-    with col_f1:
-        # Filtro por período
-        periodo_opcoes = {
-            "Todos": None,
-            "Últimos 7 dias": 7,
-            "Últimos 30 dias": 30,
-            "Últimos 3 meses": 90,
-            "Este ano": "ano_atual"
-        }
-        
-        periodo_selecionado = st.selectbox("\U0001F4C5 Período", list(periodo_opcoes.keys()))
-        
-    with col_f2:
-        # Filtro por categoria
-        categorias = ["Todas"] + df["Categoria Principal"].unique().tolist()
-        categoria_selecionada = st.selectbox("\U0001F3F7 Categoria", categorias)
-        
-    with col_f3:
-        # Filtro por subcategoria
-        if categoria_selecionada != "Todas":
-            subcategorias = ["Todas"] + df[df["Categoria Principal"] == categoria_selecionada]["Subcategoria"].unique().tolist()
-        else:
-            subcategorias = ["Todas"] + df["Subcategoria"].unique().tolist()
-        
-        subcategoria_selecionada = st.selectbox("\U0001F516 Subcategoria", subcategorias)
-    
-    with col_f4:
-        # Filtro por valor
-        valor_min = st.number_input("\U0001F4B0 Valor mínimo", min_value=0.0, value=0.0, step=10.0)
-    
-    # Busca textual
-    busca_texto = st.text_input("\U0001F50D Buscar na descrição", placeholder="Digite para buscar...")
-    
-    st.markdown('</div>', unsafe_allow_html=True)
-    
-    # Aplica filtros
-    df_filtered = df.copy()
-    
-    # Filtro por período
-    if periodo_opcoes[periodo_selecionado] is not None:
-        df_filtered['Data'] = pd.to_datetime(df_filtered['Data'], format='%d/%m/%Y', errors='coerce')
-        
-        if periodo_selecionado == "Este ano":
-            ano_atual = datetime.now().year
-            df_filtered = df_filtered[df_filtered['Data'].dt.year == ano_atual]
-        else:
-            dias = periodo_opcoes[periodo_selecionado]
-            data_limite = datetime.now() - timedelta(days=dias)
-            df_filtered = df_filtered[df_filtered['Data'] >= data_limite]
-    
-    # Outros filtros
-    if categoria_selecionada != "Todas":
-        df_filtered = df_filtered[df_filtered["Categoria Principal"] == categoria_selecionada]
-    
-    if subcategoria_selecionada != "Todas":
-        df_filtered = df_filtered[df_filtered["Subcategoria"] == subcategoria_selecionada]
-    
-    if valor_min > 0:
-        df_filtered["Valor R$"] = pd.to_numeric(df_filtered["Valor R$"], errors='coerce')
-        df_filtered = df_filtered[df_filtered["Valor R$"] >= valor_min]
-    
-    if busca_texto:
-        df_filtered = df_filtered[df_filtered["Descrição"].str.contains(busca_texto, case=False, na=False)]
-    
-    # Mostra quantas transações foram encontradas
-    total_encontradas = len(df_filtered)
-    total_original = len(df)
-    
-    if total_encontradas != total_original:
-        st.info(f"\U0001F50D Encontradas {total_encontradas} de {total_original} transações")
-    
-    return df_filtered
 
 def render_metricas_periodo(df):
     """Métricas do período filtrado"""
