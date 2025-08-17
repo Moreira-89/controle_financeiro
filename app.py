@@ -66,19 +66,6 @@ def main():
 
         setup_sidebar()
 
-        df = get_transacao()
-        
-        if df.empty:
-            st.warning("\U0001F4DD Ainda não há transações. Que tal adicionar a primeira?")
-            col1, col2 = st.columns(2)
-            with col1:
-                if st.button("\U0001F3AF Começar com uma Receita", type="primary"):
-                    new_receita()
-            with col2:
-                if st.button("\U0001F4B3 Ou uma Despesa", type="secondary"):
-                    new_despesa()
-            return
-
         df_numeric = df.copy()
         df_numeric["Valor R$"] = pd.to_numeric(df_numeric["Valor R$"], errors='coerce')
         
